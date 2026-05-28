@@ -5,7 +5,7 @@ import Link from "next/link";
 import Sidebar from "@/components/dashboard/Sidebar";
 import ConversationList from "@/components/dashboard/ConversationList";
 import ConversationDetail from "@/components/dashboard/ConversationDetail";
-import { conversations } from "@/lib/mockData";
+import { conversations } from "@/lib/data/mockData";
 import type { Conversation } from "@/lib/types";
 
 type PlatformFilter = "all" | "whatsapp" | "instagram" | "email";

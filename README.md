@@ -1,59 +1,95 @@
-<div align="center">
-  <h1>
-    <img src="public/rovnlogo.png" width="48" height="48" style="vertical-align: middle; margin-right: 12px;" />
-    Rovn
-  </h1>
-  <p><strong>The AI-powered omnichannel inbox for modern small businesses.</strong></p>
-  <p>Detect hot leads across WhatsApp, Instagram, and Email. Generate smart follow-ups in one click.</p>
+<h1 align="center">
+  <img src="public/logo.png" width="40" height="40" valign="middle" />
+  &nbsp;Rovn
+</h1>
+
+<p align="center">
+<strong>The AI-powered omnichannel inbox for modern small businesses.</strong><br/>
+Detect hot leads across WhatsApp, Instagram, and Email. Generate smart follow-ups in one click.
+</p>
+
+[![Next.js](https://img.shields.io/badge/Next.js-14-black?style=flat-square&logo=next.js)](https://nextjs.org)
+[![TypeScript](https://img.shields.io/badge/TypeScript-5-blue?style=flat-square&logo=typescript)](https://typescriptlang.org)
+[![Tailwind CSS](https://img.shields.io/badge/Tailwind-3-38bdf8?style=flat-square&logo=tailwindcss)](https://tailwindcss.com)
+
 </div>
 
 ---
 
 ## Features
 
-* **Omnichannel Lead Detection:** Automatically identifies and highlights high-intent leads from WhatsApp, Instagram, and Email.
-* **One-Click Smart Follow-ups:** Generates context-aware, personalized replies instantly using cutting-edge OpenAI models.
-* **Unified Dashboard:** Manage all your business communications seamlessly in one unified interface.
-* **Performance Optimized:** Built on Next.js 14 and styled with Tailwind CSS for optimal responsiveness and speed.
+- **Omnichannel Inbox** — WhatsApp, Instagram, and Email in one unified workspace
+- **AI Intent Scoring** — Automatically ranks leads as Hot, Pending, or Cold in real time
+- **1-Click AI Drafts** — Context-aware reply suggestions generated instantly via OpenAI
+- **Co-Pilot Mode** — Review, refine, and send — no autopilot surprises
 
 ## Tech Stack
 
-* **Framework:** Next.js 14
-* **Styling:** Tailwind CSS
-* **Components:** shadcn/ui
-* **AI Integration:** OpenAI (GPT-4o-mini, Codex)
+| Layer | Tech |
+|---|---|
+| Framework | Next.js 14 (App Router) |
+| Language | TypeScript |
+| Styling | Tailwind CSS |
+| Components | shadcn/ui |
+| AI | OpenAI GPT-4o-mini via OpenRouter |
+| Deployment | Vercel |
+
+## Project Structure
+
+```
+rovn/
+├── app/
+│   ├── api/
+│   │   ├── generate-reply/    # AI reply generation endpoint
+│   │   └── summarize/         # Conversation summarization endpoint
+│   ├── dashboard/             # Main workspace
+│   ├── settings/              # User settings
+│   ├── sign-in / sign-up/     # Auth pages
+│   ├── layout.tsx
+│   └── page.tsx               # Landing page
+├── components/
+│   ├── dashboard/             # Sidebar, ConversationList, ConversationDetail
+│   └── ui/                    # RovnLogo, ThemeToggle
+├── lib/
+│   ├── api/                   # OpenAI client
+│   ├── data/                  # Mock data
+│   ├── types.ts
+│   └── utils.ts
+└── public/                    # Static assets
+```
 
 ## Quick Start
 
-### 1. Clone the Repository
+### 1. Clone
 ```bash
 git clone https://github.com/pranavgawaii/rovn-ai-inbox.git
 cd rovn-ai-inbox
 ```
 
-### 2. Install Dependencies
+### 2. Install
 ```bash
 npm install
 ```
 
-### 3. Setup Environment Variables
-Copy the example environment file and add your API keys:
+### 3. Environment Variables
 ```bash
 cp .env.local.example .env.local
 ```
 
-Open `.env.local` and add your OpenAI API Key:
+Add your key to `.env.local`:
 ```env
 OPENAI_API_KEY=your_api_key_here
 ```
 
-### 4. Run the Development Server
+### 4. Run
 ```bash
 npm run dev
 ```
-Navigate to [http://localhost:3000](http://localhost:3000) to see the application in action.
+
+Open [http://localhost:3000](http://localhost:3000)
 
 ---
 
 ## License
-This project is licensed under the MIT License.
+
+MIT © 2026 Rovn

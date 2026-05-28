@@ -21,7 +21,7 @@ export async function POST(request: Request) {
       })
       .join("\n");
 
-    const { default: openai } = await import("@/lib/openai");
+    const { default: openai } = await import("@/lib/api/openai");
     const completion = await openai.chat.completions.create({
       model: "openai/gpt-4o-mini",
       max_tokens: 400,

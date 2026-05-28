@@ -14,7 +14,7 @@ export async function POST(request: Request) {
     const { contactName, summary, platform, businessType, tone, lastMessage } =
       (await request.json()) as GenerateReplyRequest;
 
-    const { default: openai } = await import("@/lib/openai");
+    const { default: openai } = await import("@/lib/api/openai");
     const completion = await openai.chat.completions.create({
       model: "openai/gpt-4o-mini",
       max_tokens: 600,
