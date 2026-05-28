@@ -1,6 +1,6 @@
 <div align="center">
   <h1>
-    <img src="rovnlogo.png" width="48" height="48" style="vertical-align: middle; margin-right: 12px;" />
+    <img src="public/rovnlogo.png" width="48" height="48" style="vertical-align: middle; margin-right: 12px;" />
     Rovn
   </h1>
   <p><strong>The AI-powered omnichannel inbox for modern small businesses.</strong></p>

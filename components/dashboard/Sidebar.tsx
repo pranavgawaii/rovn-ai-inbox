@@ -3,8 +3,8 @@
 import { useState } from "react";
 import Link from "next/link";
 import { Bell, HelpCircle, Inbox, Mail, Settings, Sparkles, Instagram } from "lucide-react";
-import { RovnWordmark } from "@/components/RovnLogo";
-import ThemeToggle from "@/components/ThemeToggle";
+import { RovnWordmark } from "@/components/ui/RovnLogo";
+import ThemeToggle from "@/components/ui/ThemeToggle";
 import type { Conversation } from "@/lib/types";
 import { cn } from "@/lib/utils";
 

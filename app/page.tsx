@@ -3,7 +3,7 @@
 import Link from "next/link";
 import { useState, useEffect } from "react";
 import { motion, AnimatePresence } from "framer-motion";
-import { RovnWordmark } from "@/components/RovnLogo";
+import { RovnWordmark } from "@/components/ui/RovnLogo";
 import {
   Inbox,
   Flame,

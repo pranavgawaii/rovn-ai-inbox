@@ -1,5 +1,5 @@
 import Link from "next/link";
-import { RovnWordmark } from "@/components/RovnLogo";
+import { RovnWordmark } from "@/components/ui/RovnLogo";
 
 export default function SignOutPage() {
   return (

@@ -2,9 +2,9 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import Sidebar from "@/components/Sidebar";
-import ConversationList from "@/components/ConversationList";
-import ConversationDetail from "@/components/ConversationDetail";
+import Sidebar from "@/components/dashboard/Sidebar";
+import ConversationList from "@/components/dashboard/ConversationList";
+import ConversationDetail from "@/components/dashboard/ConversationDetail";
 import { conversations } from "@/lib/mockData";
 import type { Conversation } from "@/lib/types";
 

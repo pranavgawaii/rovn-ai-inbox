@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { RovnWordmark } from "@/components/RovnLogo";
+import { RovnWordmark } from "@/components/ui/RovnLogo";
 import { cn } from "@/lib/utils";
 import { LogOut } from "lucide-react";
 
