@@ -389,7 +389,7 @@ export default function LandingPage() {
             transition={{ delay: 0.08, duration: 0.6 }}
             className="mx-auto mt-6 max-w-3xl text-3xl font-semibold leading-[1.1] tracking-[-0.03em] sm:text-4xl md:text-5xl text-white"
           >
-            Never let a lead go cold.
+            Recover Revenue Hidden Inside Conversations.
           </motion.h1>
 
           <motion.p

@@ -136,7 +136,7 @@ export default function DashboardPage() {
     { label: "Hot Leads", value: hotLeads, icon: Flame, tone: "text-[#c0392b]", bg: "bg-[#fff1f0]" },
     { label: "Delayed Replies", value: delayedReplies, icon: MessageSquareReply, tone: "text-[#92400e]", bg: "bg-[#fffbeb]" },
     { label: "Drafts Ready", value: draftsReady, icon: Sparkles, tone: "text-[#1a3a1c]", bg: "bg-[#efffd6]" },
-    { label: "At Risk", value: pipelineAtRisk, icon: TrendingUp, tone: "text-[#0f0f0f]", bg: "bg-white" }
+    { label: "Recoverable Revenue", value: pipelineAtRisk, icon: TrendingUp, tone: "text-[#0f0f0f]", bg: "bg-white" }
   ];
 
   useEffect(() => {

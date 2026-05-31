@@ -239,10 +239,15 @@ function SettingsContent() {
                         <div className="flex items-center gap-2">
                           <p className="text-[14px] font-semibold text-[#0f0f0f]">Gmail Workspace</p>
                           {isGmailConnected && (
-                            <span className="flex items-center gap-1 rounded-full bg-[#a3e635]/20 px-2 py-0.5 text-[10px] font-bold text-[#1a3a1c]">
-                              <CheckCircle2 className="h-3 w-3" />
-                              Connected
-                            </span>
+                            <>
+                              <span className="flex items-center gap-1 rounded-full bg-[#a3e635]/20 px-2 py-0.5 text-[10px] font-bold text-[#1a3a1c]">
+                                <CheckCircle2 className="h-3 w-3" />
+                                Gmail Connected
+                              </span>
+                              <span className="flex items-center gap-1 rounded-full bg-[#a3e635]/20 px-2 py-0.5 text-[10px] font-bold text-[#1a3a1c]">
+                                1 Inbox Synced
+                              </span>
+                            </>
                           )}
                         </div>
                         {isGmailConnected ? (

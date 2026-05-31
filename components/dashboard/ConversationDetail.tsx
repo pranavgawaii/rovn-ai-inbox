@@ -464,7 +464,7 @@ export function ConversationDetail({
               setDraft(event.target.value);
               setSent(false);
             }}
-            placeholder="AI draft appears here..."
+            placeholder="Select a lead to generate an AI rescue draft."
             className="h-24 w-full resize-none rounded-xl border border-[#e8e8e4] bg-[#f7f7f4] p-4 text-[13px] leading-6 text-[#0f0f0f] outline-none placeholder:text-[#9b9b9b] focus:border-[#a3e635]"
           />
           <button
