@@ -113,30 +113,64 @@ export function ConversationDetail({
       });
       setLoading(false);
     } else {
-      setLoading(true);
-      setAiSummary(null);
-      setCurrentStepIndex(0);
+      const fetchAnalysis = async () => {
+        setLoading(true);
+        setAiSummary(null);
+        setCurrentStepIndex(0);
 
-      const step1 = window.setTimeout(() => setCurrentStepIndex(1), 500);
-      const step2 = window.setTimeout(() => setCurrentStepIndex(2), 1000);
-      const done = window.setTimeout(() => {
-        setAiSummary({
-          summary: conversation.dealSummary,
-          status: conversation.status,
-          daysSinceReply: conversation.daysSinceLastReply,
-          urgencyReason: conversation.nextBestAction,
-          suggestedTone: conversation.urgency === "Critical" ? "urgent" : "professional",
-          leadScore: conversation.leadScore
-        });
-        setAnalyzedLeads((prev) => ({ ...prev, [conversation.id]: true }));
-        setLoading(false);
-      }, 1500);
+        // Simulation steps for UX progress indicators
+        const step1 = window.setTimeout(() => setCurrentStepIndex(1), 400);
+        const step2 = window.setTimeout(() => setCurrentStepIndex(2), 800);
 
-      return () => {
-        window.clearTimeout(step1);
-        window.clearTimeout(step2);
-        window.clearTimeout(done);
+        try {
+          const response = await fetch("/api/summarize", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({
+              messages: conversation.messages,
+              contactName: conversation.contactName,
+              platform: conversation.platform,
+              businessType: conversation.businessType
+            })
+          });
+
+          if (!response.ok) {
+            throw new Error("Summarize API route returned error status");
+          }
+
+          const data = await response.json();
+          if (data.error) {
+            throw new Error(data.error);
+          }
+
+          setAiSummary({
+            summary: data.summary || conversation.dealSummary,
+            status: data.status || conversation.status,
+            daysSinceReply: typeof data.daysSinceReply === "number" ? data.daysSinceReply : conversation.daysSinceLastReply,
+            urgencyReason: data.urgencyReason || conversation.nextBestAction,
+            suggestedTone: data.suggestedTone || (conversation.urgency === "Critical" ? "urgent" : "professional"),
+            leadScore: typeof data.leadScore === "number" ? data.leadScore : conversation.leadScore
+          });
+          setAnalyzedLeads((prev) => ({ ...prev, [conversation.id]: true }));
+        } catch (error) {
+          console.warn("Using local mock analysis database backup:", error);
+          // Graceful fallback to default mock summary if server is offline or key missing
+          setAiSummary({
+            summary: conversation.dealSummary,
+            status: conversation.status,
+            daysSinceReply: conversation.daysSinceLastReply,
+            urgencyReason: conversation.nextBestAction,
+            suggestedTone: conversation.urgency === "Critical" ? "urgent" : "professional",
+            leadScore: conversation.leadScore
+          });
+        } finally {
+          window.clearTimeout(step1);
+          window.clearTimeout(step2);
+          setLoading(false);
+        }
       };
+
+      fetchAnalysis();
     }
   // Reset generated content only when the user switches threads, not when a sent reply updates the active thread.
   // eslint-disable-next-line react-hooks/exhaustive-deps
@@ -150,7 +184,41 @@ export function ConversationDetail({
     setRepliesLoading(true);
     setSent(false);
     setDraftFailed(false);
-    window.setTimeout(() => {
+
+    try {
+      const lastMessage = conversation.messages[conversation.messages.length - 1]?.content ?? "";
+      const response = await fetch("/api/generate-reply", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          contactName: conversation.contactName,
+          summary: aiSummary.summary,
+          platform: conversation.platform,
+          businessType: conversation.businessType,
+          tone: aiSummary.suggestedTone,
+          lastMessage: lastMessage
+        })
+      });
+
+      if (!response.ok) {
+        throw new Error("Generate-reply API route returned error status");
+      }
+
+      const data = await response.json();
+      if (data.error) {
+        throw new Error(data.error);
+      }
+
+      if (Array.isArray(data.replies) && data.replies.length > 0) {
+        setReplies(data.replies);
+        setSelectedReplyIndex(0);
+        setDraft(data.replies[0] ?? "");
+      } else {
+        throw new Error("Invalid reply format returned by API");
+      }
+    } catch (error) {
+      console.warn("Using local mock draft generator backup:", error);
+      // Graceful fallback to default mock replies if server is offline or key missing
       const generatedReplies = conversation.contextualReplies.filter(Boolean);
       const nextReplies = generatedReplies.length > 0 ? generatedReplies : [buildFallbackReply(conversation)];
 
@@ -158,8 +226,9 @@ export function ConversationDetail({
       setReplies(nextReplies);
       setSelectedReplyIndex(0);
       setDraft(nextReplies[0] ?? "");
+    } finally {
       setRepliesLoading(false);
-    }, 700);
+    }
   }
 
   if (!conversation) {
