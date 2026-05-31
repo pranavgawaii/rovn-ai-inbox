@@ -14,6 +14,18 @@ export interface Conversation {
   status: "hot" | "pending" | "cold";
   daysSinceLastReply: number;
   avatar: string;
+  leadValue: string;
+  leadScore: number;
+  urgency: "Critical" | "High" | "Medium" | "Low";
+  nextBestAction: string;
+  whyItMatters: {
+    budgetMentioned: boolean;
+    buyingIntentDetected: boolean;
+    timelineMentioned: boolean;
+    delayedDays: number;
+  };
+  dealSummary: string;
+  contextualReplies: string[];
 }
 
 export interface AISummary {

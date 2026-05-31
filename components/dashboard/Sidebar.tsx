@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import Link from "next/link";
-import { Bell, HelpCircle, Inbox, Mail, Settings, Sparkles, Instagram } from "lucide-react";
+import { HelpCircle, Inbox, Mail, PanelLeftClose, Settings, Sparkles, Instagram } from "lucide-react";
 import { RovnWordmark } from "@/components/ui/RovnLogo";
 import ThemeToggle from "@/components/ui/ThemeToggle";
 import type { Conversation } from "@/lib/types";
@@ -20,6 +20,8 @@ interface SidebarProps {
   selectedPlatform: PlatformFilter;
   onPlatformChange: (platform: PlatformFilter) => void;
   conversations: Conversation[];
+  onClose: () => void;
+  gmailConnected?: boolean;
 }
 
 const navItems: Array<{
@@ -64,7 +66,9 @@ function PremiumToggle({
 export default function Sidebar({
   selectedPlatform,
   onPlatformChange,
-  conversations
+  conversations,
+  onClose,
+  gmailConnected = false,
 }: SidebarProps) {
   const [leadScoring, setLeadScoring] = useState(true);
   const [smartDrafts, setSmartDrafts] = useState(true);
@@ -79,9 +83,17 @@ export default function Sidebar({
   };
 
   return (
-    <aside className="flex h-full w-[260px] flex-shrink-0 flex-col bg-[#0a1a0c]">
-      <div className="px-5 pb-8 pt-8">
+    <aside className="relative flex h-full w-[260px] flex-shrink-0 flex-col bg-[#0a1a0c]">
+      <div className="flex items-center justify-between px-5 pb-8 pt-8">
         <RovnWordmark className="text-white" />
+        <button
+          type="button"
+          onClick={onClose}
+          className="grid h-8 w-8 place-items-center rounded-lg border border-white/10 bg-white/5 text-[#8a9e8b] transition hover:border-[#a3e635]/30 hover:bg-[#132a15] hover:text-[#a3e635]"
+          aria-label="Close main sidebar"
+        >
+          <PanelLeftClose className="h-4 w-4" />
+        </button>
       </div>
 
       <nav className="px-4">
@@ -123,6 +135,44 @@ export default function Sidebar({
           );
         })}
       </nav>
+
+        <div className="mt-6 px-4">
+        <p className="mb-2.5 px-2 text-[10px] font-semibold uppercase tracking-widest text-[#6b8a6d]">
+          Channels
+        </p>
+        <div className="rounded-2xl border border-white/5 bg-white/[0.02] p-3.5 space-y-2.5">
+          <div className="flex items-center justify-between text-[12px]">
+            <span className="text-[#8a9e8b] font-medium flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-[#a3e635] animate-pulse" /> WhatsApp
+            </span>
+            <span className="text-[10px] font-semibold text-[#a3e635] bg-[#a3e635]/10 px-2 py-0.5 rounded-md">Connected</span>
+          </div>
+          <div className="flex items-center justify-between text-[12px]">
+            <span className="text-[#8a9e8b] font-medium flex items-center gap-2">
+              <span className={cn(
+                "h-1.5 w-1.5 rounded-full",
+                gmailConnected ? "bg-[#a3e635] animate-pulse" : "bg-amber-400"
+              )} /> Gmail
+            </span>
+            {gmailConnected ? (
+              <span className="text-[10px] font-semibold text-[#a3e635] bg-[#a3e635]/10 px-2 py-0.5 rounded-md">Connected</span>
+            ) : (
+              <a
+                href="/api/auth/google"
+                className="text-[10px] font-semibold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-md hover:bg-amber-400/20 transition"
+              >
+                Connect
+              </a>
+            )}
+          </div>
+          <div className="flex items-center justify-between text-[12px]">
+            <span className="text-[#8a9e8b] font-medium flex items-center gap-2">
+              <span className="h-1.5 w-1.5 rounded-full bg-amber-400" /> Instagram
+            </span>
+            <span className="text-[10px] font-semibold text-amber-400 bg-amber-400/10 px-2 py-0.5 rounded-md">Pending</span>
+          </div>
+        </div>
+      </div>
 
       <div className="mt-8 px-4">
         <p className="mb-3 px-2 text-[10px] font-semibold uppercase tracking-widest text-[#6b8a6d]">

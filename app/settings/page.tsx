@@ -1,10 +1,11 @@
 "use client";
 
-import { useState } from "react";
+import { useEffect, useState, Suspense } from "react";
+import { useSearchParams } from "next/navigation";
 import Link from "next/link";
 import { RovnWordmark } from "@/components/ui/RovnLogo";
 import { cn } from "@/lib/utils";
-import { LogOut } from "lucide-react";
+import { LogOut, CheckCircle2, AlertCircle, Loader2, Mail } from "lucide-react";
 
 const sections = [
   "Profile",
@@ -20,8 +21,20 @@ const sections = [
 
 const toggleKeys = ["Smart Follow-ups", "AI Lead Scoring", "Quiet Mode", "Auto Summaries", "Priority Alerts"];
 
-export default function SettingsPage() {
-  const [activeSection, setActiveSection] = useState("AI Preferences");
+interface GmailAccount {
+  email: string;
+  connected: boolean;
+}
+
+function getCookie(name: string): string | null {
+  if (typeof document === "undefined") return null;
+  const match = document.cookie.match(new RegExp("(^| )" + name + "=([^;]+)"));
+  return match ? decodeURIComponent(match[2]) : null;
+}
+
+function SettingsContent() {
+  const searchParams = useSearchParams();
+  const [activeSection, setActiveSection] = useState("Connected Accounts");
   const [toggles, setToggles] = useState<Record<string, boolean>>({
     "Smart Follow-ups": true,
     "AI Lead Scoring": true,
@@ -30,9 +43,67 @@ export default function SettingsPage() {
     "Priority Alerts": false,
   });
 
+  const [gmailAccount, setGmailAccount] = useState<GmailAccount | null>(null);
+  const [gmailLeadsCount, setGmailLeadsCount] = useState(0);
+  const [gmailStatus, setGmailStatus] = useState<"idle" | "connecting" | "success" | "error">("idle");
+  const [gmailError, setGmailError] = useState<string | null>(null);
+
+  // Check URL params & cookie on mount
+  useEffect(() => {
+    const connected = searchParams.get("gmailConnected");
+    const error = searchParams.get("gmailError");
+
+    if (connected === "true") {
+      setGmailStatus("success");
+      setActiveSection("Connected Accounts");
+    }
+    if (error) {
+      setGmailStatus("error");
+      setGmailError(
+        error === "access_denied"
+          ? "Access was denied. Please try again."
+          : "Connection failed. Check your Google OAuth credentials."
+      );
+      setActiveSection("Connected Accounts");
+    }
+
+    // Read from cookie
+    const accountCookie = getCookie("rovn_gmail_account");
+    const leadsCookie = getCookie("rovn_gmail_leads");
+
+    if (accountCookie) {
+      try {
+        setGmailAccount(JSON.parse(accountCookie));
+      } catch {}
+    }
+    if (leadsCookie) {
+      try {
+        const leads = JSON.parse(leadsCookie);
+        setGmailLeadsCount(Array.isArray(leads) ? leads.length : 0);
+      } catch {}
+    }
+  }, [searchParams]);
+
   const toggleState = (key: string) => {
     setToggles((prev) => ({ ...prev, [key]: !prev[key] }));
   };
+
+  const handleConnectGmail = () => {
+    setGmailStatus("connecting");
+    window.location.href = "/api/auth/google";
+  };
+
+  const handleDisconnectGmail = () => {
+    // Clear cookies
+    document.cookie = "rovn_gmail_account=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    document.cookie = "rovn_gmail_leads=; expires=Thu, 01 Jan 1970 00:00:00 UTC; path=/;";
+    setGmailAccount(null);
+    setGmailLeadsCount(0);
+    setGmailStatus("idle");
+    setGmailError(null);
+  };
+
+  const isGmailConnected = !!gmailAccount?.connected || gmailStatus === "success";
 
   return (
     <main className="min-h-screen bg-[#f7f7f4] text-[#0f0f0f]">
@@ -45,7 +116,7 @@ export default function SettingsPage() {
             <LogOut className="h-4 w-4" /> Sign out
           </Link>
         </div>
-        
+
         <div className="mt-10 grid gap-8 lg:grid-cols-[280px_1fr]">
           <aside className="rounded-3xl border border-[#e8e8e4] bg-white p-3 shadow-sm">
             {sections.map((section) => {
@@ -62,27 +133,34 @@ export default function SettingsPage() {
                   )}
                 >
                   {section}
+                  {section === "Connected Accounts" && isGmailConnected && (
+                    <span className="ml-2 inline-block h-1.5 w-1.5 rounded-full bg-[#a3e635] align-middle" />
+                  )}
                 </button>
               );
             })}
           </aside>
-          
+
           <section className="rounded-3xl border border-[#e8e8e4] bg-white p-8 lg:p-12 shadow-sm">
             <p className="text-[11px] font-bold uppercase tracking-widest text-[#a3e635]">
               {activeSection}
             </p>
             <h1 className="mt-3 text-[32px] font-bold tracking-tight text-[#0f0f0f] md:text-[40px]">
-              {activeSection === "AI Preferences" ? "Tune how Rovn helps." : `${activeSection} Settings`}
+              {activeSection === "AI Preferences"
+                ? "Tune how Rovn helps."
+                : activeSection === "Connected Accounts"
+                ? "Connect your channels."
+                : `${activeSection} Settings`}
             </h1>
-            
+
             {activeSection === "AI Preferences" ? (
               <>
                 <div className="mt-10 grid gap-4 md:grid-cols-2">
                   {toggleKeys.map((toggle) => {
                     const enabled = toggles[toggle];
                     return (
-                      <div 
-                        key={toggle} 
+                      <div
+                        key={toggle}
                         className="flex items-center justify-between rounded-2xl border border-[#e8e8e4] bg-[#f7f7f4] p-5 transition-all hover:border-[#a3e635]/50"
                       >
                         <div>
@@ -120,21 +198,117 @@ export default function SettingsPage() {
               </>
             ) : activeSection === "Connected Accounts" ? (
               <div className="mt-10 space-y-4">
-                {[
-                  { name: "WhatsApp Business", connected: true, id: "+1 (555) 123-4567" },
-                  { name: "Instagram Direct", connected: false, id: "@rovn.ai" },
-                  { name: "Gmail Workspace", connected: true, id: "hello@rovn.in" }
-                ].map(account => (
-                  <div key={account.name} className="flex items-center justify-between rounded-2xl border border-[#e8e8e4] bg-[#f7f7f4] p-5">
-                    <div>
-                      <p className="text-[14px] font-semibold text-[#0f0f0f]">{account.name}</p>
-                      <p className="mt-1 text-[12px] text-[#6b6b6b]">{account.connected ? `Connected as ${account.id}` : "Not connected"}</p>
-                    </div>
-                    <button className={cn("px-4 py-2 rounded-xl text-[12px] font-bold transition-all", account.connected ? "bg-white border border-[#e8e8e4] text-[#6b6b6b] hover:text-[#c0392b]" : "bg-[#a3e635] text-[#0a1a0c] hover:bg-[#8bc92a]")}>
-                      {account.connected ? "Disconnect" : "Connect"}
-                    </button>
+                {/* WhatsApp */}
+                <div className="flex items-center justify-between rounded-2xl border border-[#e8e8e4] bg-[#f7f7f4] p-5">
+                  <div>
+                    <p className="text-[14px] font-semibold text-[#0f0f0f]">WhatsApp Business</p>
+                    <p className="mt-1 text-[12px] text-[#6b6b6b]">Connected as +1 (555) 123-4567</p>
                   </div>
-                ))}
+                  <button className="px-4 py-2 rounded-xl text-[12px] font-bold transition-all bg-white border border-[#e8e8e4] text-[#6b6b6b] hover:text-[#c0392b]">
+                    Disconnect
+                  </button>
+                </div>
+
+                {/* Instagram */}
+                <div className="flex items-center justify-between rounded-2xl border border-[#e8e8e4] bg-[#f7f7f4] p-5">
+                  <div>
+                    <p className="text-[14px] font-semibold text-[#0f0f0f]">Instagram Direct</p>
+                    <p className="mt-1 text-[12px] text-[#6b6b6b]">Not connected</p>
+                  </div>
+                  <button className="px-4 py-2 rounded-xl text-[12px] font-bold transition-all bg-[#a3e635] text-[#0a1a0c] hover:bg-[#8bc92a]">
+                    Connect
+                  </button>
+                </div>
+
+                {/* Gmail — real OAuth */}
+                <div className={cn(
+                  "rounded-2xl border p-5 transition-all",
+                  isGmailConnected
+                    ? "border-[#a3e635]/40 bg-[#efffd6]/40"
+                    : "border-[#e8e8e4] bg-[#f7f7f4]"
+                )}>
+                  <div className="flex items-start justify-between gap-4">
+                    <div className="flex items-start gap-3">
+                      <div className={cn(
+                        "mt-0.5 grid h-9 w-9 flex-shrink-0 place-items-center rounded-xl",
+                        isGmailConnected ? "bg-[#a3e635]/20" : "bg-white border border-[#e8e8e4]"
+                      )}>
+                        <Mail className={cn("h-4 w-4", isGmailConnected ? "text-[#1a3a1c]" : "text-[#6b6b6b]")} />
+                      </div>
+                      <div>
+                        <div className="flex items-center gap-2">
+                          <p className="text-[14px] font-semibold text-[#0f0f0f]">Gmail Workspace</p>
+                          {isGmailConnected && (
+                            <span className="flex items-center gap-1 rounded-full bg-[#a3e635]/20 px-2 py-0.5 text-[10px] font-bold text-[#1a3a1c]">
+                              <CheckCircle2 className="h-3 w-3" />
+                              Connected
+                            </span>
+                          )}
+                        </div>
+                        {isGmailConnected ? (
+                          <div className="mt-1 space-y-0.5">
+                            <p className="text-[12px] text-[#4a6a4c] font-medium">
+                              {gmailAccount?.email || "Gmail account connected"}
+                            </p>
+                            {gmailLeadsCount > 0 && (
+                              <p className="text-[11px] text-[#6b8a6d]">
+                                {gmailLeadsCount} leads imported into Revenue At Risk
+                              </p>
+                            )}
+                          </div>
+                        ) : (
+                          <p className="mt-1 text-[12px] text-[#6b6b6b]">
+                            Connect Gmail to import leads from your inbox
+                          </p>
+                        )}
+                        {gmailError && (
+                          <div className="mt-2 flex items-center gap-1.5 text-[11px] text-red-600">
+                            <AlertCircle className="h-3.5 w-3.5" />
+                            {gmailError}
+                          </div>
+                        )}
+                      </div>
+                    </div>
+
+                    {isGmailConnected ? (
+                      <button
+                        onClick={handleDisconnectGmail}
+                        className="flex-shrink-0 px-4 py-2 rounded-xl text-[12px] font-bold transition-all bg-white border border-[#e8e8e4] text-[#6b6b6b] hover:text-[#c0392b]"
+                      >
+                        Disconnect
+                      </button>
+                    ) : (
+                      <button
+                        onClick={handleConnectGmail}
+                        disabled={gmailStatus === "connecting"}
+                        className="flex-shrink-0 flex items-center gap-2 px-4 py-2 rounded-xl text-[12px] font-bold transition-all bg-[#a3e635] text-[#0a1a0c] hover:bg-[#8bc92a] disabled:opacity-60 disabled:cursor-not-allowed"
+                      >
+                        {gmailStatus === "connecting" ? (
+                          <>
+                            <Loader2 className="h-3.5 w-3.5 animate-spin" />
+                            Connecting…
+                          </>
+                        ) : (
+                          "Connect Gmail"
+                        )}
+                      </button>
+                    )}
+                  </div>
+
+                  {/* Success import summary */}
+                  {isGmailConnected && gmailLeadsCount > 0 && (
+                    <div className="mt-4 flex items-center gap-2 rounded-xl bg-[#a3e635]/10 border border-[#a3e635]/20 px-4 py-3">
+                      <CheckCircle2 className="h-4 w-4 text-[#1a3a1c] flex-shrink-0" />
+                      <p className="text-[12px] font-medium text-[#1a3a1c]">
+                        {gmailLeadsCount} emails imported and scored as leads. Check your{" "}
+                        <Link href="/dashboard" className="underline font-bold">
+                          Revenue At Risk dashboard
+                        </Link>{" "}
+                        to see them.
+                      </p>
+                    </div>
+                  )}
+                </div>
               </div>
             ) : (
               <div className="mt-10 flex flex-col items-center justify-center rounded-2xl border border-dashed border-[#d0d0cc] py-20 text-center">
@@ -151,5 +325,20 @@ export default function SettingsPage() {
         </div>
       </div>
     </main>
+  );
+}
+
+export default function SettingsPage() {
+  return (
+    <Suspense fallback={
+      <main className="min-h-screen bg-[#f7f7f4] flex items-center justify-center">
+        <div className="flex flex-col items-center gap-3">
+          <Loader2 className="h-8 w-8 animate-spin text-[#6b6b6b]" />
+          <p className="text-[13px] text-[#6b6b6b] font-medium">Loading Settings…</p>
+        </div>
+      </main>
+    }>
+      <SettingsContent />
+    </Suspense>
   );
 }
